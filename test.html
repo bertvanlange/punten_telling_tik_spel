@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>WASM Debug Test</title>
+</head>
+<body>
+  <h1>WASM Debug Test</h1>
+  <div id="output"></div>
+  
+  <script type="module">
+    import init, { parse_game_data } from './pkg/punten_telling_tik_spel.js';
+
+    async function test() {
+      await init();
+      
+      // Simple test data
+      const tikkersCsv = `Naam,Wachtwoord,Locatie
+Aah,Hjl,
+Bert,Banaan,`;
+
+      const getiktCsv = `TeamID,Wachtwoord,Locatie,Tijdstempel
+,Hhh,,19/10/2025 14:11:31
+,Banaan,,20/10/2025 13:21:24
+,Banaan,,20/10/2025 13:21:48`;
+
+      console.log('Testing parse_game_data...');
+      
+      try {
+        const result = parse_game_data(tikkersCsv, getiktCsv);
+        console.log('Result:', result);
+        console.log('Type:', typeof result);
+        console.log('Keys:', Object.keys(result));
+        console.log('JSON:', JSON.stringify(result, null, 2));
+        
+        document.getElementById('output').innerHTML = '<pre>' + JSON.stringify(result, null, 2) + '</pre>';
+      } catch (error) {
+        console.error('Error:', error);
+        document.getElementById('output').innerHTML = '<p style="color: red;">Error: ' + error + '</p>';
+      }
+    }
+    
+    test();
+  </script>
+</body>
+</html>

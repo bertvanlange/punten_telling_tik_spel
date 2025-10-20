@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Punten Telling Tik Spel</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+    .loading { background: #fff3cd; }
+    .error { background: #f8d7da; color: #721c24; }
+    .success { background: #d4edda; color: #155724; }
+  </style>
+</head>
+<body>
+  <h1>Punten Telling Tik Spel</h1>
+  <div id="status" class="status loading">Loading...</div>
+
+  <h2>Teams</h2>
+  <div id="teams">Loading teams...</div>
+
+  <h2>Tickers</h2>
+  <div id="tickers">Loading tickers...</div>
+
+  <script type="module">
+    import init, { get_tikkers_url, get_getikt_url, parse_game_data } from './punten_telling_tik_spel/pkg/punten_telling_tik_spel.js';
+
+    async function run() {
+      const statusDiv = document.getElementById("status");
+      
+      try {
+        // Initialize WASM
+        statusDiv.textContent = 'Initializing WASM...';
+        await init();
+        console.log('WASM initialized');
+
+        // Get the Google Sheet URLs from WASM
+        const tikkersUrl = get_tikkers_url();
+        const getiktUrl = get_getikt_url();
+        
+        console.log('Fetching CSV from:', tikkersUrl);
+        console.log('Fetching CSV from:', getiktUrl);
+        statusDiv.textContent = 'Fetching data from Google Sheets...';
+
+        // Fetch the CSV files from Google Sheets
+        const [tikkersResponse, getiktResponse] = await Promise.all([
+          fetch(tikkersUrl),
+          fetch(getiktUrl)
+        ]);
+
+        if (!tikkersResponse.ok || !getiktResponse.ok) {
+          throw new Error(`Failed to fetch CSV files: Tikkers ${tikkersResponse.status}, Getikt ${getiktResponse.status}`);
+        }
+
+        const tikkersCsv = await tikkersResponse.text();
+        const getiktCsv = await getiktResponse.text();
+
+        console.log('Fetched tikkers CSV (first 100 chars):', tikkersCsv.substring(0, 100));
+        console.log('Fetched getikt CSV (first 100 chars):', getiktCsv.substring(0, 100));
+
+        statusDiv.textContent = 'Parsing data...';
+        
+        // Parse the data using your Rust WASM functions
+        const result = parse_game_data(tikkersCsv, getiktCsv);
+        
+        console.log('Parsed result:', result);
+        console.log('Result type:', typeof result);
+        console.log('Result keys:', Object.keys(result));
+        console.log('Teams:', result.teams);
+        console.log('Tikkers:', result.tikkers);
+
+        statusDiv.textContent = 'Data loaded successfully!';
+        statusDiv.className = 'status success';
+
+        // Display the results
+        displayData(result);
+
+      } catch (error) {
+        console.error('Error:', error);
+        console.error('Error stack:', error.stack);
+        statusDiv.textContent = `Error: ${error.message}`;
+        statusDiv.className = 'status error';
+        document.getElementById("teams").innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+        document.getElementById("tickers").innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+      }
+    }
+
+    function displayData(data) {
+      const teamsDiv = document.getElementById("teams");
+      const tickersDiv = document.getElementById("tickers");
+
+      console.log('displayData received:', data);
+      console.log('data type:', typeof data);
+      console.log('data keys:', Object.keys(data));
+      console.log('data.teams:', data.teams);
+      console.log('data.tikkers:', data.tikkers);
+      
+      // Show raw JSON for debugging
+      console.log('Raw JSON:', JSON.stringify(data, null, 2));
+
+      // Display teams
+      if (data.teams && data.teams.team_list && Array.isArray(data.teams.team_list)) {
+        console.log('Teams team_list length:', data.teams.team_list.length);
+        if (data.teams.team_list.length === 0) {
+          teamsDiv.innerHTML = '<h2>Teams</h2><p>No teams found yet (empty array)</p>';
+        } else {
+          teamsDiv.innerHTML = '<h2>Teams</h2>';
+          data.teams.team_list.forEach(team => {
+            const teamName = team.name || team.team_id || 'Unnamed Team';
+            const displayTeamId = team.team_id || '(no team ID in CSV)';
+            teamsDiv.innerHTML += `
+              <div style="border: 1px solid #ccc; padding: 10px; margin: 5px; background: #f9f9f9;">
+                <strong>${teamName}</strong><br>
+                Team ID: ${displayTeamId}<br>
+                Ticks: ${team.ticks}<br>
+                Points: ${team.points}<br>
+                ${team.last_tick ? `Last tick: ${formatDate(team.last_tick)}` : ''}
+              </div>
+            `;
+          });
+        }
+      } else {
+        console.log('Teams condition failed. Has teams:', !!data.teams, 'Has team_list:', !!(data.teams && data.teams.team_list));
+        teamsDiv.innerHTML = '<p>No teams data available</p><details><summary>Debug Data</summary><pre>' + JSON.stringify(data.teams, null, 2) + '</pre></details>';
+      }
+
+      // Display tikkers
+      if (data.tikkers && data.tikkers.tikker_list && Array.isArray(data.tikkers.tikker_list)) {
+        console.log('Tikkers tikker_list length:', data.tikkers.tikker_list.length);
+        if (data.tikkers.tikker_list.length === 0) {
+          tickersDiv.innerHTML = '<h2>Tikkers</h2><p>No tikkers found yet (empty array)</p>';
+        } else {
+          tickersDiv.innerHTML = '<h2>Tikkers</h2>';
+          data.tikkers.tikker_list.forEach(tikker => {
+            tickersDiv.innerHTML += `
+              <div style="border: 1px solid #ccc; padding: 10px; margin: 5px; background: #f9f9f9;">
+                <strong>${tikker.name}</strong><br>
+                Tiks: ${tikker.tiks}<br>
+                ${tikker.last_tick ? `Last tik: ${formatDate(tikker.last_tick)}` : ''}
+              </div>
+            `;
+          });
+        }
+      } else {
+        console.log('Tikkers condition failed. Has tikkers:', !!data.tikkers, 'Has tikker_list:', !!(data.tikkers && data.tikkers.tikker_list));
+        tickersDiv.innerHTML = '<p>No tikkers data available</p><details><summary>Debug Data</summary><pre>' + JSON.stringify(data.tikkers, null, 2) + '</pre></details>';
+      }
+    }
+
+    function formatDate(date) {
+      if (!date) return '';
+      const day = String(date.day).padStart(2, '0');
+      const month = String(date.month).padStart(2, '0');
+      const hour = String(date.hour).padStart(2, '0');
+      const minute = String(date.minute).padStart(2, '0');
+      return `${day}/${month}/${date.year} ${hour}:${minute}`;
+    }
+
+    run();
+  </script>
+</body>
+</html>
