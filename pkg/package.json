@@ -1,0 +1,15 @@
+{
+  "name": "punten_telling_tik_spel",
+  "type": "module",
+  "version": "0.1.0",
+  "files": [
+    "punten_telling_tik_spel_bg.wasm",
+    "punten_telling_tik_spel.js",
+    "punten_telling_tik_spel.d.ts"
+  ],
+  "main": "punten_telling_tik_spel.js",
+  "types": "punten_telling_tik_spel.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}
