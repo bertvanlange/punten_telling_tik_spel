@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Team Dashboard - Punten Telling Tik Spel</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    header {
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      margin-bottom: 30px;
+      text-align: center;
+    }
+    
+    h1 {
+      color: #333;
+      font-size: 2.5em;
+      margin-bottom: 10px;
+    }
+    
+    .status {
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 20px;
+      font-size: 1.1em;
+    }
+    
+    .loading {
+      background: #fff3cd;
+      color: #856404;
+    }
+    
+    .error {
+      background: #f8d7da;
+      color: #721c24;
+    }
+    
+    .success {
+      background: #d4edda;
+      color: #155724;
+    }
+    
+    .dashboard {
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+    
+    .team-card {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 12px 15px;
+      margin-bottom: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .team-card:hover {
+      transform: translateX(5px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .team-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    
+    .team-name {
+      font-size: 1.1em;
+      font-weight: bold;
+      color: #333;
+    }
+    
+    .team-id {
+      color: #999;
+      font-size: 0.75em;
+    }
+    
+    .team-rank {
+      font-size: 1.2em;
+      min-width: 30px;
+      text-align: center;
+    }
+    
+    .stats-inline {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    
+    .stat-inline {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.9em;
+    }
+    
+    .stat-inline strong {
+      color: #667eea;
+      font-size: 1.1em;
+    }
+    
+    .bar-container {
+      margin-bottom: 5px;
+    }
+    
+    .bar-label {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px;
+      font-size: 0.8em;
+      color: #666;
+    }
+    
+    .bar-background {
+      background: #e0e0e0;
+      height: 18px;
+      border-radius: 9px;
+      overflow: hidden;
+      position: relative;
+    }
+    
+    .bar-fill {
+      height: 100%;
+      border-radius: 9px;
+      transition: width 1s ease;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 8px;
+      color: white;
+      font-weight: bold;
+      font-size: 0.75em;
+    }
+    
+    .bar-fill.ticks {
+      background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .bar-fill.points {
+      background: linear-gradient(90deg, #f093fb 0%, #f5576c 100%);
+    }
+    
+    .section-title {
+      font-size: 1.8em;
+      color: #333;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid #667eea;
+    }
+    
+    .tikker-card {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 10px 15px;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      transition: transform 0.2s ease;
+    }
+    
+    .tikker-card:hover {
+      transform: translateX(5px);
+    }
+    
+    .tikker-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    .tikker-rank {
+      font-size: 1.1em;
+      font-weight: bold;
+      color: #667eea;
+      min-width: 25px;
+    }
+    
+    .tikker-name {
+      font-weight: 600;
+      color: #333;
+    }
+    
+    .tikker-stats {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+    
+    .tikker-stat {
+      text-align: center;
+    }
+    
+    .tikker-stat-value {
+      font-size: 1.3em;
+      font-weight: bold;
+      color: #667eea;
+    }
+    
+    .tikker-stat-label {
+      font-size: 0.75em;
+      color: #666;
+    }
+    
+    .last-activity {
+      font-size: 0.75em;
+      color: #999;
+      margin-top: 5px;
+    }
+    
+    .no-data {
+      text-align: center;
+      padding: 40px;
+      color: #999;
+      font-size: 1.2em;
+    }
+    
+    .navigation {
+      text-align: center;
+      margin-top: 20px;
+    }
+    
+    .nav-link {
+      display: inline-block;
+      background: white;
+      color: #667eea;
+      padding: 12px 25px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .nav-link:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
+    
+    .refresh-btn {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 8px;
+      font-size: 1em;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      margin-top: 10px;
+    }
+    
+    .refresh-btn:hover {
+      background: #5568d3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🏆 Team Dashboard</h1>
+      <p>Punten Telling Tik Spel</p>
+      <div id="status" class="status loading">Loading data...</div>
+      <button class="refresh-btn" onclick="location.reload()">🔄 Refresh</button>
+    </header>
+
+    <div class="dashboard">
+      <h2 class="section-title">🏆 Teams</h2>
+      <div id="teams-dashboard">
+        <div class="no-data">Loading teams...</div>
+      </div>
+    </div>
+
+    <div class="dashboard" style="margin-top: 30px;">
+      <h2 class="section-title">👥 Tikkers</h2>
+      <div id="tikkers-dashboard">
+        <div class="no-data">Loading tikkers...</div>
+      </div>
+    </div>
+
+    <div class="navigation">
+      <a href="index.html" class="nav-link">📋 View Detailed List</a>
+    </div>
+  </div>
+
+  <script type="module">
+    import init, { get_tikkers_url, get_getikt_url, parse_game_data } from './punten_telling_tik_spel/pkg/punten_telling_tik_spel.js';
+
+    async function run() {
+      const statusDiv = document.getElementById("status");
+      
+      try {
+        // Initialize WASM
+        statusDiv.textContent = 'Initializing WASM...';
+        await init();
+
+        // Get the Google Sheet URLs from WASM
+        const tikkersUrl = get_tikkers_url();
+        const getiktUrl = get_getikt_url();
+        
+        statusDiv.textContent = 'Fetching data from Google Sheets...';
+
+        // Fetch the CSV files from Google Sheets
+        const [tikkersResponse, getiktResponse] = await Promise.all([
+          fetch(tikkersUrl),
+          fetch(getiktUrl)
+        ]);
+
+        if (!tikkersResponse.ok || !getiktResponse.ok) {
+          throw new Error(`Failed to fetch CSV files: Tikkers ${tikkersResponse.status}, Getikt ${getiktResponse.status}`);
+        }
+
+        const tikkersCsv = await tikkersResponse.text();
+        const getiktCsv = await getiktResponse.text();
+
+        statusDiv.textContent = 'Parsing data...';
+        
+        // Parse the data using your Rust WASM functions
+        const result = parse_game_data(tikkersCsv, getiktCsv);
+
+        statusDiv.textContent = 'Data loaded successfully! 🎉';
+        statusDiv.className = 'status success';
+
+        // Display the results
+        displayTeamsDashboard(result);
+        displayTikkersDashboard(result);
+
+      } catch (error) {
+        console.error('Error:', error);
+        statusDiv.textContent = `Error: ${error.message}`;
+        statusDiv.className = 'status error';
+        document.getElementById("teams-dashboard").innerHTML = `<div class="no-data" style="color: #d32f2f;">Error loading data: ${error.message}</div>`;
+      }
+    }
+
+    function displayTeamsDashboard(data) {
+      const dashboardDiv = document.getElementById("teams-dashboard");
+
+      if (!data.teams || !data.teams.team_list || data.teams.team_list.length === 0) {
+        dashboardDiv.innerHTML = '<div class="no-data">No teams found yet. Start tracking ticks to see data!</div>';
+        return;
+      }
+
+      // Find max values for bar scaling
+      const maxTicks = Math.max(...data.teams.team_list.map(t => t.ticks), 1);
+      const maxPoints = Math.max(...data.teams.team_list.map(t => t.points), 1);
+
+      // Sort teams by points (descending), then by ticks
+      const sortedTeams = [...data.teams.team_list].sort((a, b) => {
+        if (b.points !== a.points) return b.points - a.points;
+        return b.ticks - a.ticks;
+      });
+
+      let html = '';
+      sortedTeams.forEach((team, index) => {
+        const teamName = team.name || team.team_id || `Team ${index + 1}`;
+        const teamId = team.team_id || '(no ID)';
+        
+        const ticksPercent = (team.ticks / maxTicks) * 100;
+        const pointsPercent = maxPoints > 0 ? (team.points / maxPoints) * 100 : 0;
+
+        const rankEmoji = index === 0 && team.points > 0 ? '🥇' : 
+                          index === 1 && team.points > 0 ? '🥈' : 
+                          index === 2 && team.points > 0 ? '🥉' : `#${index + 1}`;
+
+        html += `
+          <div class="team-card">
+            <div class="team-header">
+              <div>
+                <div class="team-name">${teamName}</div>
+                <div class="team-id">${teamId}</div>
+              </div>
+              <div class="team-rank">${rankEmoji}</div>
+            </div>
+
+            <div class="stats-inline">
+              <div class="stat-inline">
+                🎯 <strong>${team.ticks}</strong> <span>ticks</span>
+              </div>
+              <div class="stat-inline">
+                ⭐ <strong>${team.points}</strong> <span>points</span>
+              </div>
+            </div>
+
+            <div class="bar-container">
+              <div class="bar-background">
+                <div class="bar-fill ticks" style="width: ${ticksPercent}%">
+                  ${team.ticks > 0 && ticksPercent > 15 ? team.ticks : ''}
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      dashboardDiv.innerHTML = html;
+    }
+
+    function displayTikkersDashboard(data) {
+      const dashboardDiv = document.getElementById("tikkers-dashboard");
+
+      if (!data.tikkers || !data.tikkers.tikker_list || data.tikkers.tikker_list.length === 0) {
+        dashboardDiv.innerHTML = '<div class="no-data">No tikkers found yet.</div>';
+        return;
+      }
+
+      // Sort tikkers by tiks (descending)
+      const sortedTikkers = [...data.tikkers.tikker_list].sort((a, b) => b.tiks - a.tiks);
+
+      let html = '';
+      sortedTikkers.forEach((tikker, index) => {
+        const lastTick = tikker.last_tick ? formatDate(tikker.last_tick) : 'Never';
+
+        const rankDisplay = index === 0 && tikker.tiks > 0 ? '🥇' :
+                           index === 1 && tikker.tiks > 0 ? '🥈' :
+                           index === 2 && tikker.tiks > 0 ? '🥉' :
+                           `#${index + 1}`;
+
+        html += `
+          <div class="tikker-card">
+            <div class="tikker-info">
+              <div class="tikker-rank">${rankDisplay}</div>
+              <div>
+                <div class="tikker-name">${tikker.name}</div>
+                <div class="last-activity">Last: ${lastTick}</div>
+              </div>
+            </div>
+            <div class="tikker-stats">
+              <div class="tikker-stat">
+                <div class="tikker-stat-value">${tikker.tiks}</div>
+                <div class="tikker-stat-label">Tiks</div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      dashboardDiv.innerHTML = html;
+    }
+
+    function formatDate(date) {
+      if (!date) return '';
+      const day = String(date.day).padStart(2, '0');
+      const month = String(date.month).padStart(2, '0');
+      const hour = String(date.hour).padStart(2, '0');
+      const minute = String(date.minute).padStart(2, '0');
+      return `${day}/${month}/${date.year} ${hour}:${minute}`;
+    }
+
+    run();
+  </script>
+</body>
+</html>
