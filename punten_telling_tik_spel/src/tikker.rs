@@ -61,7 +61,7 @@ impl Tikkers {
 
     pub fn add_tik_with_date_by_paswoord(&mut self, paswoord: &str, tik_date: Date, num_tiks: u32) -> Option<&str> {
         if let Some(tikker) = self.add_num_tiks_by_paswoord(paswoord, num_tiks) {
-            tikker.add_tik_date(tik_date);
+            tikker.last_tick = Some(tik_date);
             Some(&tikker.name)
         } else {
             None
@@ -122,6 +122,7 @@ impl Tikker {
     pub fn update_location(&mut self, locatie: Locatie) {
         self.last_loc = Some(locatie);
     }
+
 }
 
 
