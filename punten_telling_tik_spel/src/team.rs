@@ -2,29 +2,31 @@
 
 
 use serde::Serialize;
-use crate::location_date::{Date, Locatie};
+use crate::config::Config;
+use crate::location_date::{Locatie, Timestamp};
 use crate::tikker::{Tikkers};
 use crate::inport_info::{read_sheet_dynamic};
 
-pub fn populate_teams_from_google_sheet(getikt_csv: &str, teams: &mut Teams, tikkers: &mut Tikkers) {
+pub fn populate_teams_from_google_sheet(getikt_csv: &str, teams: &mut Teams, tikkers: &mut Tikkers,cfg: &Config) {
     let rows = read_sheet_dynamic(&getikt_csv);
     match rows {
         Ok(structure) => {
             for row in structure {
-                let team_id = row.get("Team index").unwrap_or(&"".to_string()).to_string();
-                let pasword = row.get("Wachtwoord").unwrap_or(&"".to_string()).to_string();
-                let date: Date = Date::from_tijdstempel(row.get("Tijdstempel").unwrap_or(&"0".to_string()));
-                println!("Processing tick for team_id: {}, pasword: {}, date: {:?}", team_id, pasword, date);
-                if date.year == 0 {
-                    continue;
-                }
-                if tikkers.add_tik_with_date_by_paswoord(&pasword, date.clone(), 1).is_some(){
-                    teams.add_tick_and_date_to_existing_or_new_team(&team_id, date);
+                let tijdstempel = row.get("Tijdstempel").unwrap_or(&"0".to_string()).to_string();
+
+                if let Some(time_stamp) = cfg.is_relevent_time_stamp(tijdstempel.as_str()){
+                    let team_id = row.get("Team index").unwrap_or(&"".to_string()).to_string();
+                    let pasword = row.get("Wachtwoord").unwrap_or(&"".to_string()).to_string();
+                    
+                    println!("Processing tick for team_id: {}, pasword: {}, date: {:?}", team_id, pasword, time_stamp);
+                    if tikkers.add_tik_with_date_by_paswoord(&pasword, time_stamp, 1).is_some() {
+                        teams.add_tick_and_date_to_existing_or_new_team(&team_id, time_stamp);
+                    }
                 }
             }
         },
         Err(e) => {
-            // handle error
+            // handle error 
             println!("Error reading sheet: {}", e);
         }
     }
@@ -65,7 +67,7 @@ impl Teams {
         }
     }
 
-    pub fn add_tick_and_date_to_existing_or_new_team(&mut self, team_id: &str, tick_date: Date) {
+    pub fn add_tick_and_date_to_existing_or_new_team(&mut self, team_id: &str, tick_date: Timestamp) {
         if let Some(team) = self.get_team_by_id(team_id) {
             team.add_tick_date(tick_date);
         } else {
@@ -84,8 +86,8 @@ pub struct Team {
     pub ticks: u32,
     pub points: u32,
     pub subgroup: Option<String>,
-    pub last_tick: Option<Date>,
-    pub last_point: Option<Date>,
+    pub last_tick: Option<Timestamp>,
+    pub last_point: Option<Timestamp>,
     pub last_loc: Option<Locatie>,
     }
 
@@ -108,7 +110,7 @@ impl Team {
         self.ticks += 1;
     }
 
-    pub fn add_tick_date(&mut self, tick_date: Date) {
+    pub fn add_tick_date(&mut self, tick_date: Timestamp) {
         self.add_tick();
         self.last_tick = Some(tick_date);
     }
@@ -118,7 +120,7 @@ impl Team {
         self.points += points;
     }
 
-    pub fn add_points_date(&mut self, points: u32, point_date: Date) {
+    pub fn add_points_date(&mut self, points: u32, point_date: Timestamp) {
         self.add_points(points);
         self.last_point = Some(point_date);
     }   

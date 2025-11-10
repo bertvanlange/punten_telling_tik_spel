@@ -124,6 +124,22 @@ export function get_getikt_url() {
     }
 }
 
+/**
+ * @returns {string}
+ */
+export function get_config_url() {
+    let deferred1_0;
+    let deferred1_1;
+    try {
+        const ret = wasm.get_config_url();
+        deferred1_0 = ret[0];
+        deferred1_1 = ret[1];
+        return getStringFromWasm0(ret[0], ret[1]);
+    } finally {
+        wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+    }
+}
+
 function takeFromExternrefTable0(idx) {
     const value = wasm.__wbindgen_export_2.get(idx);
     wasm.__externref_table_dealloc(idx);
@@ -132,14 +148,17 @@ function takeFromExternrefTable0(idx) {
 /**
  * @param {string} tikkers_csv
  * @param {string} getikt_csv
+ * @param {string} config_csv
  * @returns {any}
  */
-export function parse_game_data(tikkers_csv, getikt_csv) {
+export function parse_game_data(tikkers_csv, getikt_csv, config_csv) {
     const ptr0 = passStringToWasm0(tikkers_csv, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
     const len0 = WASM_VECTOR_LEN;
     const ptr1 = passStringToWasm0(getikt_csv, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
     const len1 = WASM_VECTOR_LEN;
-    const ret = wasm.parse_game_data(ptr0, len0, ptr1, len1);
+    const ptr2 = passStringToWasm0(config_csv, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len2 = WASM_VECTOR_LEN;
+    const ret = wasm.parse_game_data(ptr0, len0, ptr1, len1, ptr2, len2);
     if (ret[2]) {
         throw takeFromExternrefTable0(ret[1]);
     }
@@ -190,6 +209,14 @@ function __wbg_get_imports() {
         const len1 = WASM_VECTOR_LEN;
         getDataViewMemory0().setInt32(arg0 + 4 * 1, len1, true);
         getDataViewMemory0().setInt32(arg0 + 4 * 0, ptr1, true);
+    };
+    imports.wbg.__wbg_getTime_6bb3f64e0f18f817 = function(arg0) {
+        const ret = arg0.getTime();
+        return ret;
+    };
+    imports.wbg.__wbg_new0_b0a0a38c201e6df5 = function() {
+        const ret = new Date();
+        return ret;
     };
     imports.wbg.__wbg_new_19c25a3f2fa63a02 = function() {
         const ret = new Object();

@@ -1,6 +1,6 @@
 use serde::{ Serialize};
-
-use crate::location_date::{Date, Locatie};
+use crate::config::{Config};
+use crate::location_date::{Timestamp, Locatie};
 use crate::inport_info::read_sheet_dynamic;
 
 #[derive(Serialize, Debug)]
@@ -59,7 +59,7 @@ impl Tikkers {
         }
     }
 
-    pub fn add_tik_with_date_by_paswoord(&mut self, paswoord: &str, tik_date: Date, num_tiks: u32) -> Option<&str> {
+    pub fn add_tik_with_date_by_paswoord(&mut self, paswoord: &str, tik_date: Timestamp, num_tiks: u32) -> Option<&str> {
         if let Some(tikker) = self.add_num_tiks_by_paswoord(paswoord, num_tiks) {
             tikker.last_tick = Some(tik_date);
             Some(&tikker.name)
@@ -93,7 +93,7 @@ pub struct Tikker {
     pub name: String,
     pub paswoord: String,
     pub tiks: u32,
-    pub last_tick: Option<Date>,
+    pub last_tick: Option<Timestamp>,
     pub last_loc: Option<Locatie>,
 }
 
@@ -114,7 +114,7 @@ impl Tikker {
         self.tiks += 1;
     }
 
-    pub fn add_tik_date(&mut self, tik_date: Date) {
+    pub fn add_tik_date(&mut self, tik_date: Timestamp) {
         self.add_tik();
         self.last_tick = Some(tik_date);
     }
@@ -128,16 +128,19 @@ impl Tikker {
 
 
 
-pub  fn get_tikkers_from_google_sheet(sheet_csv: &str) -> Result<Tikkers,String> {
+pub  fn get_tikkers_from_google_sheet(sheet_csv: &str,cfg: &Config) -> Result<Tikkers,String> {
     let mut tikkers = Tikkers::default();
     
     let rows = read_sheet_dynamic(sheet_csv);
     match rows {
         Ok(structure) => {
             for row in structure {
-                let team_naam = row.get("Naam").unwrap_or(&"".to_string()).to_string();
-                let wachtwoord = row.get("Wachtwoord").unwrap_or(&"".to_string()).to_string();
-                tikkers.add_ticker_by_name_paswoord(&team_naam, &wachtwoord);
+                let tijdstempel = row.get("Tijdstempel").unwrap_or(&"0".to_string()).to_string();
+                if let Some(_time_stamp) = cfg.is_relevent_time_stamp(tijdstempel.as_str()){
+                    let team_naam = row.get("Naam").unwrap_or(&"".to_string()).to_string();
+                    let wachtwoord = row.get("Wachtwoord").unwrap_or(&"".to_string()).to_string();
+                    tikkers.add_ticker_by_name_paswoord(&team_naam, &wachtwoord);
+                }
             }
         },
         Err(e) => {

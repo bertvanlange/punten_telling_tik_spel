@@ -50,31 +50,36 @@
         // Get the Google Sheet URLs from WASM
         const tikkersUrl = get_tikkers_url();
         const getiktUrl = get_getikt_url();
+        const configURL = get_config_url();
         
         console.log('Fetching CSV from:', tikkersUrl);
         console.log('Fetching CSV from:', getiktUrl);
+        console.log('Fetching config from:', configURL);
         statusDiv.textContent = 'Fetching data from Google Sheets...';
 
         // Fetch the CSV files from Google Sheets
-        const [tikkersResponse, getiktResponse] = await Promise.all([
+        const [tikkersResponse, getiktResponse, configResponse] = await Promise.all([
           fetch(tikkersUrl),
-          fetch(getiktUrl)
+          fetch(getiktUrl),
+          fetch(configURL)
         ]);
 
-        if (!tikkersResponse.ok || !getiktResponse.ok) {
-          throw new Error(`Failed to fetch CSV files: Tikkers ${tikkersResponse.status}, Getikt ${getiktResponse.status}`);
+        if (!tikkersResponse.ok || !getiktResponse.ok || !configResponse.ok) {
+          throw new Error(`Failed to fetch CSV files: Tikkers ${tikkersResponse.status}, Getikt ${getiktResponse.status}, Config ${configResponse.status}`);
         }
 
         const tikkersCsv = await tikkersResponse.text();
         const getiktCsv = await getiktResponse.text();
+        const configCsv = await configResponse.text();
 
         console.log('Fetched tikkers CSV (first 100 chars):', tikkersCsv.substring(0, 100));
         console.log('Fetched getikt CSV (first 100 chars):', getiktCsv.substring(0, 100));
+        console.log('Fetched config CSV (first 100 chars):', configCsv.substring(0, 100));
 
         statusDiv.textContent = 'Parsing data...';
         
         // Parse the data using your Rust WASM functions
-        const result = parse_game_data(tikkersCsv, getiktCsv);
+        const result =  parse_game_data(tikkersCsv, getiktCsv, configCsv);
         
         console.log('Parsed result:', result);
         console.log('Result type:', typeof result);

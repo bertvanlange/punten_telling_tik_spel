@@ -2,7 +2,8 @@
 /* eslint-disable */
 export function get_tikkers_url(): string;
 export function get_getikt_url(): string;
-export function parse_game_data(tikkers_csv: string, getikt_csv: string): any;
+export function get_config_url(): string;
+export function parse_game_data(tikkers_csv: string, getikt_csv: string, config_csv: string): any;
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 
@@ -10,7 +11,8 @@ export interface InitOutput {
   readonly memory: WebAssembly.Memory;
   readonly get_tikkers_url: () => [number, number];
   readonly get_getikt_url: () => [number, number];
-  readonly parse_game_data: (a: number, b: number, c: number, d: number) => [number, number, number];
+  readonly get_config_url: () => [number, number];
+  readonly parse_game_data: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number];
   readonly __wbindgen_malloc: (a: number, b: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
   readonly __wbindgen_export_2: WebAssembly.Table;
