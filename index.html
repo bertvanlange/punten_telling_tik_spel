@@ -22,10 +22,24 @@
     .nav-link:hover {
       background: #5568d3;
     }
+    .refresh-btn {
+      background: #28a745;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      font-weight: 600;
+      cursor: pointer;
+      margin: 10px 5px;
+    }
+    .refresh-btn:hover {
+      background: #218838;
+    }
   </style>
 </head>
 <body>
   <h1>Punten Telling Tik Spel</h1>
+  <button class="refresh-btn" onclick="clearCacheAndRefresh()">🔄 Clear Cache & Refresh</button>
   <a href="dashboard.html" class="nav-link">📊 View Dashboard</a>
   <div id="status" class="status loading">Loading...</div>
 
@@ -35,9 +49,8 @@
   <h2>Tickers</h2>
   <div id="tickers">Loading tickers...</div>
 
-  <script type="module">
-    import init, { get_tikkers_url, get_getikt_url, parse_game_data } from './punten_telling_tik_spel/pkg/punten_telling_tik_spel.js';
-
+  <!-- <script type="module">
+  import init, { get_tikkers_url, get_getikt_url, get_config_url, parse_game_data } from './punten_telling_tik_spel/pkg/punten_telling_tik_spel.js';
     async function run() {
       const statusDiv = document.getElementById("status");
       
@@ -172,6 +185,74 @@
       const hour = String(date.hour).padStart(2, '0');
       const minute = String(date.minute).padStart(2, '0');
       return `${day}/${month}/${date.year} ${hour}:${minute}`;
+    }
+
+    run();
+  </script> -->
+  <script type="module">
+    import { getGameData } from './game-data.js';
+
+    import { refreshGameData } from './game-data.js';
+
+    window.clearCacheAndRefresh = async function() {
+      const statusDiv = document.getElementById("status");
+      statusDiv.textContent = 'Clearing cache and refreshing...';
+      statusDiv.className = 'status loading';
+      try {
+        await refreshGameData();
+        location.reload();
+      } catch (error) {
+        statusDiv.textContent = `Error: ${error.message}`;
+        statusDiv.className = 'status error';
+      }
+    };
+
+    async function run() {
+      const statusDiv = document.getElementById("status");
+      
+      try {
+        statusDiv.textContent = 'Loading data...';
+        const result = await getGameData();
+        
+        statusDiv.textContent = 'Data loaded successfully!';
+        statusDiv.className = 'status success';
+        displayData(result);
+      } catch (error) {
+        console.error('Error:', error);
+        statusDiv.textContent = `Error: ${error.message}`;
+        statusDiv.className = 'status error';
+      }
+    }
+
+    function displayData(data) {
+      const teamsDiv = document.getElementById("teams");
+      const tickersDiv = document.getElementById("tickers");
+
+      // Display teams
+      if (data.teams && data.teams.team_list && Array.isArray(data.teams.team_list)) {
+        teamsDiv.innerHTML = '';
+        data.teams.team_list.forEach(team => {
+          const teamName = team.name || team.team_id || 'Unnamed Team';
+          teamsDiv.innerHTML += `
+            <div style="border: 1px solid #ccc; padding: 10px; margin: 5px;">
+              <strong>${teamName}</strong><br>
+              Ticks: ${team.ticks} | Points: ${team.points}
+            </div>
+          `;
+        });
+      }
+
+      // Display tikkers
+      if (data.tikkers && data.tikkers.tikker_list && Array.isArray(data.tikkers.tikker_list)) {
+        tickersDiv.innerHTML = '';
+        data.tikkers.tikker_list.forEach(tikker => {
+          tickersDiv.innerHTML += `
+            <div style="border: 1px solid #ccc; padding: 10px; margin: 5px;">
+              <strong>${tikker.name}</strong> - Tiks: ${tikker.tiks}
+            </div>
+          `;
+        });
+      }
     }
 
     run();

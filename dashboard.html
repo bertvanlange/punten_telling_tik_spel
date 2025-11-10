@@ -309,52 +309,24 @@
   </div>
 
   <script type="module">
-    import init, { get_tikkers_url, get_getikt_url, parse_game_data } from './punten_telling_tik_spel/pkg/punten_telling_tik_spel.js';
+    import { getGameData } from './game-data.js';
 
     async function run() {
       const statusDiv = document.getElementById("status");
       
       try {
-        // Initialize WASM
-        statusDiv.textContent = 'Initializing WASM...';
-        await init();
-
-        // Get the Google Sheet URLs from WASM
-        const tikkersUrl = get_tikkers_url();
-        const getiktUrl = get_getikt_url();
+        statusDiv.textContent = 'Loading data...';
+        const result = await getGameData();
         
-        statusDiv.textContent = 'Fetching data from Google Sheets...';
-
-        // Fetch the CSV files from Google Sheets
-        const [tikkersResponse, getiktResponse] = await Promise.all([
-          fetch(tikkersUrl),
-          fetch(getiktUrl)
-        ]);
-
-        if (!tikkersResponse.ok || !getiktResponse.ok) {
-          throw new Error(`Failed to fetch CSV files: Tikkers ${tikkersResponse.status}, Getikt ${getiktResponse.status}`);
-        }
-
-        const tikkersCsv = await tikkersResponse.text();
-        const getiktCsv = await getiktResponse.text();
-
-        statusDiv.textContent = 'Parsing data...';
-        
-        // Parse the data using your Rust WASM functions
-        const result = parse_game_data(tikkersCsv, getiktCsv);
-
         statusDiv.textContent = 'Data loaded successfully! 🎉';
         statusDiv.className = 'status success';
 
-        // Display the results
         displayTeamsDashboard(result);
         displayTikkersDashboard(result);
-
       } catch (error) {
         console.error('Error:', error);
         statusDiv.textContent = `Error: ${error.message}`;
         statusDiv.className = 'status error';
-        document.getElementById("teams-dashboard").innerHTML = `<div class="no-data" style="color: #d32f2f;">Error loading data: ${error.message}</div>`;
       }
     }
 
@@ -463,13 +435,34 @@
       dashboardDiv.innerHTML = html;
     }
 
-    function formatDate(date) {
-      if (!date) return '';
-      const day = String(date.day).padStart(2, '0');
-      const month = String(date.month).padStart(2, '0');
-      const hour = String(date.hour).padStart(2, '0');
-      const minute = String(date.minute).padStart(2, '0');
-      return `${day}/${month}/${date.year} ${hour}:${minute}`;
+    function formatDate(timestamp) {
+      if (!timestamp) return 'Never';
+      
+      // Handle if it's already a formatted string
+      if (typeof timestamp === 'string') {
+        // Parse ISO format like "2025-10-20T16:24:12"
+        const date = new Date(timestamp);
+        if (!isNaN(date.getTime())) {
+          const day = String(date.getDate()).padStart(2, '0');
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const year = date.getFullYear();
+          const hour = String(date.getHours()).padStart(2, '0');
+          const minute = String(date.getMinutes()).padStart(2, '0');
+          return `${day}/${month}/${year} ${hour}:${minute}`;
+        }
+      }
+      
+      // Fallback: try the old format with separate fields
+      if (timestamp.day && timestamp.month && timestamp.year) {
+        const day = String(timestamp.day).padStart(2, '0');
+        const month = String(timestamp.month).padStart(2, '0');
+        const hour = String(timestamp.hour || 0).padStart(2, '0');
+        const minute = String(timestamp.minute || 0).padStart(2, '0');
+        return `${day}/${month}/${timestamp.year} ${hour}:${minute}`;
+      }
+      
+      // Last resort: just return the raw value
+      return String(timestamp);
     }
 
     run();
