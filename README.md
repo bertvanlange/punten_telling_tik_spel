@@ -1,6 +1,7 @@
 # Punten Telling Tik Spel
 
 Rust + WebAssembly app that parses Google Sheets CSVs for a “Tik” game and shows the results in a small web page.
+Web page: https://bertvanlange.github.io/punten_telling_tik_spel/dashboard.html 
 
 ## Overview
 
