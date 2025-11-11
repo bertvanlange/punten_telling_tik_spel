@@ -97,6 +97,25 @@
       color: #999;
       font-size: 0.75em;
     }
+
+    .team-image {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #667eea;
+      margin-right: 15px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    .team-info-with-image {
+      display: flex;
+      align-items: center;
+    }
+
+    .team-text-info {
+      flex: 1;
+    }
     
     .team-rank {
       font-size: 1.2em;
@@ -363,9 +382,12 @@
         html += `
           <div class="team-card">
             <div class="team-header">
-              <div>
-                <div class="team-name">${teamName}</div>
-                <div class="team-id">${teamId}</div>
+              <div class="team-info-with-image">
+                ${team.image_url && team.points > 0 ? `<img src="${team.image_url}" alt="${teamName}" class="team-image" onerror="this.style.display='none'">` : ''}
+                <div class="team-text-info">
+                  <div class="team-name">${teamName}</div>
+                  <div class="team-id">${teamId}</div>
+                </div>
               </div>
               <div class="team-rank">${rankEmoji}</div>
             </div>

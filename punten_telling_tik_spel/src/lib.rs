@@ -41,11 +41,12 @@ pub struct GameData {
 pub fn parse_game_data_core(tikkers_csv: &str, getikt_csv: &str, config_csv: &str) -> Result<GameData, String> {
     let cfg: Config = config_from_csv(config_csv)
         .map_err(|e| format!("Error parsing config: {}", e))?;
-
     let mut tikkers = get_tikkers_from_google_sheet(tikkers_csv, &cfg)?;
     
     let mut teams = Teams::new();
     populate_teams_from_google_sheet(getikt_csv, &mut teams, &mut tikkers, &cfg);
+
+    teams.add_config(&cfg);
 
     Ok(GameData { teams, tikkers })
 }

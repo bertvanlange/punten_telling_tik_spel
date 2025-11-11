@@ -2,7 +2,7 @@
 
 
 use serde::Serialize;
-use crate::config::Config;
+use crate::config::{Config,DefaultTeam};
 use crate::location_date::{Locatie, Timestamp};
 use crate::tikker::{Tikkers};
 use crate::inport_info::{read_sheet_dynamic};
@@ -76,13 +76,24 @@ impl Teams {
             self.add_team(new_team);
         }
     }
+
+    pub fn add_config(&mut self,cfg: &Config){
+        if let Some(team_cfg_vec) = &cfg.default_teams {
+            for team_cfg in team_cfg_vec {
+                let Some (team_id) = team_cfg.team_id.clone() else {continue};
+                let Some(team) = self.get_team_by_id(team_id.as_str()) else {continue};
+                team.add_cfg(team_cfg);
+            }
+        } 
+    }
 }
 
 // Structures
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize,Default)]
 pub struct Team {
     pub name: Option<String>,
     pub team_id: String,
+    pub image_url: Option<String>,
     pub ticks: u32,
     pub points: u32,
     pub subgroup: Option<String>,
@@ -94,16 +105,9 @@ pub struct Team {
 #[allow(unused)]
 impl Team {
     pub fn new(team_id: String) -> Self {
-        Team {
-            name: None,
-            team_id,
-            ticks: 0,
-            points: 0,
-            subgroup: None,
-            last_tick: None,
-            last_point: None,
-            last_loc: None,
-        }
+        let mut team = Team::default();
+        team.team_id = team_id;
+        team
     }
 
     pub fn add_tick(&mut self){
@@ -133,6 +137,16 @@ impl Team {
         self.name = Some(name);
     }
 
+    pub fn add_cfg(&mut self, team_cfg: &DefaultTeam) {
+        add_if_some(&mut self.image_url, &team_cfg.image_url);
+        add_if_some(&mut self.name, &team_cfg.name);
+    }
+
 }   
 
 
+fn add_if_some<T: Clone>(target: &mut Option<T>, source: &Option<T>) {
+    if let Some(value) = source {
+        *target = Some(value.clone());
+    }
+}

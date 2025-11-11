@@ -1,17 +1,1 @@
-*# Rust build artifacts
-target/
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Editor files
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# Keep pkg/ for GitHub Pages deployment
-# (comment this out if you want to ignore pkg/)
-# punten_telling_tik_spel/pkg/
+*

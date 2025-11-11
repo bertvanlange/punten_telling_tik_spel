@@ -129,7 +129,7 @@ impl Config {
             let name =  rest.remove(0).to_lowercase();
             let value = rest.remove(0);
             match name.as_str() {
-                "name" => {team.name = Some(value)},
+                "name"|"name:" => {team.name = Some(value)},
                 "id" | "teamid" => {team.team_id = Some(value)},
                 "image" | "image_paht" => {team.image_url = Some(value)},
                 "color" => {team.color = Some(value)},
