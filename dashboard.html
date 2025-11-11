@@ -383,7 +383,7 @@
           <div class="team-card">
             <div class="team-header">
               <div class="team-info-with-image">
-                ${team.image_url && team.points > 0 ? `<img src="${team.image_url}" alt="${teamName}" class="team-image" onerror="this.style.display='none'">` : ''}
+                ${team.image_url && (team.ticks > 0 || team.points > 0) ? `<img src="${team.image_url}" alt="${teamName}" class="team-image" onerror="this.style.display='none'">` : ''}
                 <div class="team-text-info">
                   <div class="team-name">${teamName}</div>
                   <div class="team-id">${teamId}</div>

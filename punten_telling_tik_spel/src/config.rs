@@ -131,7 +131,7 @@ impl Config {
             match name.as_str() {
                 "name"|"name:" => {team.name = Some(value)},
                 "id" | "teamid" => {team.team_id = Some(value)},
-                "image" | "image_paht" => {team.image_url = Some(value)},
+                "image" | "image_paht" => {team.image_url = Some(normalize_image_url(value))},
                 "color" => {team.color = Some(value)},
                 "active" => {
                     if value.to_lowercase().contains("true") {
@@ -153,6 +153,17 @@ impl Config {
     }
 }
 
+
+// Helper function to add Team_picture/ prefix to image URLs
+fn normalize_image_url(url: String) -> String {
+    // If the URL already contains a path separator, assume it's a full path
+    if url.contains('/') || url.contains('\\') {
+        url
+    } else {
+        // Just a filename, prepend Team_picture/
+        format!("Team_picture/{}", url)
+    }
+}
 
 pub fn config_from_csv(config_csv: &str) -> Result<Config, Box<dyn Error>> {
     let mut cfg = Config::default();
